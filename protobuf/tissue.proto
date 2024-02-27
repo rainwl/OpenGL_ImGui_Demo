@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package pb.Tissue;
+
+message Tissue
+{
+    float liga_flavum = 1;
+    float disc_yellow_space = 2;
+    float veutro_vessel = 3;
+    float fat = 4;
+    float fibrous_rings = 5;
+    float nucleus_pulposus = 6;
+    float p_longitudinal_liga = 7;
+    float dura_mater = 8;
+    float nerve_root = 9;
+}
