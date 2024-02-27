@@ -2,3 +2,5 @@
 .vs/
 
 x64/Debug/
+.idea/.idea.SpineSimServer/.idea/
+x64/Release/

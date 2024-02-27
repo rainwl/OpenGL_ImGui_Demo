@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "coord.proto";
+import "tissue.proto";
+import "haptic.proto";
+import "offset.proto";
+
+package pb.FusionData;
+
+message FusionData
+{
+    Coord.Vector3 endoscope_pos = 1;
+    Coord.Euler endoscope_euler = 2;
+    Coord.Vector3 tube_pos = 3;
+    Coord.Euler tube_euler = 4;
+    Offset.Offset offset = 5;
+    Coord.Quaternion rot_coord = 6;
+    Coord.Vector3 pivot_pos = 7;
+    float ablation_count = 8;
+    Haptic.Haptic haptic = 9;
+    float hemostasis_count = 10;
+    float hemostasis_index = 11;
+    Tissue.Tissue soft_tissue = 12;
+    float nerve_root_dance = 13;
+    Coord.Vector3 rongeur_pos = 14;
+    Coord.Vector3 rongeur_rot = 15;
+}
