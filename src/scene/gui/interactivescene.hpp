@@ -120,7 +120,7 @@ public:
   // Constructor
 
   /** Interactive scene constructor */
-  InteractiveScene(const std::string &title, const int &width = 800, const int &height = 600, const int &context_ver_maj = 3, const int &context_ver_min = 3);
+  InteractiveScene(const std::string &title, const int &width = 1200, const int &height = 900, const int &context_ver_maj = 3, const int &context_ver_min = 3);
 
 
   // Getters

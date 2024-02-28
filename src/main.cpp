@@ -10,7 +10,7 @@ int main(const int argc, char **argv) {
   auto *scene = new InteractiveScene("PhysicalSimulatedServer");
 
   // Exit with error if the scene is not valid
-  if (!scene->isValid()) {
+  if (!scene->isValid()) { 
     delete scene;
     return 1;
   }
