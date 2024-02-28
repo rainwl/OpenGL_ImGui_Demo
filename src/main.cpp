@@ -5,7 +5,6 @@
 
 int main(const int argc, char **argv) {
 #pragma region init
-  for (int i = 0; i < argc; i++) { std::cout << "argv[" << i << "]: " << argv[i] << std::endl; }
 
   // Create the scene and check it
   auto *scene = new InteractiveScene("PhysicalSimulatedServer");
@@ -18,7 +17,7 @@ int main(const int argc, char **argv) {
 
   // Set the background color
   scene->setBackgroundColor(glm::vec3(0.9f, 0.9f, 0.9f));
-
+ 
   // Setup directories
   const std::string bin_path = argv[0];
   const std::string relative = bin_path.substr(0U, bin_path.find_last_of(DIR_SEP) + 1U);
@@ -46,21 +45,21 @@ int main(const int argc, char **argv) {
 #pragma region Add models
   const std::size_t endoscope = scene->addModel(model_path + "endoscope" + DIR_SEP + "endoscope.obj");
   const std::size_t tube = scene->addModel(model_path + "tube" + DIR_SEP + "tubeC.obj");
-  const std::size_t rongeur_up_ = scene->addModel(model_path + "rongeur_upper" + DIR_SEP + "upper.obj");
+  const std::size_t rongeur_up = scene->addModel(model_path + "rongeur_upper" + DIR_SEP + "upper.obj");
   const std::size_t rongeur_low = scene->addModel(model_path + "rongeur_lower" + DIR_SEP + "lower.obj");
-    
+
   // Setup models
   Model *model = scene->getModel(endoscope);
 
   model = scene->getModel(endoscope);
   model->setScale(glm::vec3(1));
   model->setPosition((glm::vec3(0, 0, 0)));
-  
+
   model = scene->getModel(tube);
   model->setScale(glm::vec3(0.2f));
   model->setPosition((glm::vec3(0, 0, 0)));
 
-  model = scene->getModel(rongeur_up_);
+  model = scene->getModel(rongeur_up);
   model->setScale(glm::vec3(0.1f));
   model->setPosition((glm::vec3(0, 0, 0)));
 
@@ -69,9 +68,9 @@ int main(const int argc, char **argv) {
   model->setPosition((glm::vec3(0, 0, 0)));
 
 #pragma endregion
-  
+
   scene->mainLoop();
-  
+
   delete scene;
   return 0;
 }

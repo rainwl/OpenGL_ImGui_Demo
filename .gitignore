@@ -12,3 +12,5 @@
 bin*/
 build*/
 .idea/.idea.objviewer/.idea/
+
+.idea/.idea.SpineSimServer/.idea/
