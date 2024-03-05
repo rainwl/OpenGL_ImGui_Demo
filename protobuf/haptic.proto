@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package pb.Haptic;
+
+message Haptic
+{
+    float haptic_state = 1;
+    float haptic_offset = 2;
+    float haptic_force = 3;
+}

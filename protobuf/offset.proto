@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package pb.Offset;
+
+message Offset
+{
+    float endoscope_offset = 1;
+    float tube_offset = 2;
+    float instrument_switch = 3;
+    float animation_value = 4;
+    float pivot_offset = 5;
+}
