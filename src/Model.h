@@ -10,6 +10,7 @@
 #include <assimp/scene.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include "stb_image.h"
 
 #include "Mesh.h"
@@ -55,7 +56,37 @@ public:
   glm::vec3 GetPosition() const { return position; }
 
   glm::vec3 GetRotation() const { return rotation; }
-  
+
+  glm::mat4 GetWorldTransform() const {
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, position);
+    transform = glm::rotate(transform, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+    transform = glm::rotate(transform, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+    transform = glm::rotate(transform, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+    transform = glm::scale(transform, glm::vec3(scale, scale, scale));
+    return transform;
+  }
+
+  glm::vec3 GetWorldPosition() const {
+    return glm::vec3(GetWorldTransform()[3]);
+  }
+
+  // 获取模型在世界坐标系下的旋转
+  glm::vec3 GetWorldRotation() const {
+    glm::mat4 transform = GetWorldTransform();
+
+    // 分解变换矩阵以获取旋转分量
+    glm::vec3 scale;
+    glm::quat rotation;
+    glm::vec3 translation;
+    glm::vec3 skew;
+    glm::vec4 perspective;
+    glm::decompose(transform, scale, rotation, translation, skew, perspective);
+
+    // 将四元数转换为欧拉角
+    return glm::degrees(glm::eulerAngles(rotation));
+  }
+
   // model data
   vector<Texture> textures_loaded;// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
   vector<Mesh> meshes;

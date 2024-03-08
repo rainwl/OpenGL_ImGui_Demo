@@ -62,9 +62,9 @@ public:
     if (direction == k_right) cam_position += cam_right * velocity;
     if (direction == k_up)   cam_position += cam_up * velocity;
     if (direction == k_down)   cam_position -= cam_up * velocity;
-      
-      
-    
+
+
+
   }
 
   // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -91,6 +91,7 @@ public:
     if (cam_zoom < 1.0f) cam_zoom = 1.0f;
     if (cam_zoom > 45.0f) cam_zoom = 45.0f;
   }
+
 
   // camera Attributes
   glm::vec3 cam_position;
