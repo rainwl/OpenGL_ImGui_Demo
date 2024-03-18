@@ -28,8 +28,11 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 class Model {
 public:
   // constructor, expects a filepath to a 3D model.
-  explicit Model(string const &path, const bool gamma = false)
-    : gamma_correction(gamma), position(0, 0, 0), rotation(1, 1, 1), scale(1) { LoadModel(path); }
+  explicit Model(const string &model_name,string const &path, const bool gamma = false)
+    : gamma_correction(gamma), position(0, 0, 0), rotation(1, 1, 1), scale(1) {
+    LoadModel(path);
+    name = model_name;
+  }
 
   // Draws the model, and thus all its meshes
   void Draw(Shader &shader) {
@@ -46,6 +49,8 @@ public:
 
     for (auto &mesh : meshes) mesh.Draw(shader);
   }
+
+  string GetName() const{return name;}
 
   void SetPosition(const glm::vec3 &pos) { position = pos; }
 
@@ -71,7 +76,6 @@ public:
     return glm::vec3(GetWorldTransform()[3]);
   }
 
-  // 获取模型在世界坐标系下的旋转
   glm::vec3 GetWorldRotation() const {
     glm::mat4 transform = GetWorldTransform();
 
@@ -97,6 +101,8 @@ public:
   glm::vec3 position;
   glm::vec3 rotation;
   float scale;
+
+  string name;
 
 private:
   // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.

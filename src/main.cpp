@@ -60,8 +60,9 @@ std::unique_ptr<Model> dynamic;
 
 glm::vec3 pivot_pos(-100.0f, 49.0f, -9.0f);
 
-glm::vec3 dynamic_pos(-20.0f, 10.0f, -30.0f);
-// glm::vec3 dynamic_pos(-100.0f, 49.0f, -30.0f);
+glm::vec3 dynamic_pos(-34.0f, 24.0f, -30.0f);
+
+float ani_value;
 
 #pragma endregion
 
@@ -104,6 +105,9 @@ void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) dynamic_pos.z += 0.5f;
   if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) dynamic_pos.z -= 0.5f;
 #pragma endregion
+
+  if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) ani_value = 0.05f;
+  if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) ani_value = 0.9f;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -137,7 +141,6 @@ void mouse_callback(GLFWwindow *window, const double x_pos_in, const double y_po
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 void scroll_callback(GLFWwindow *window, double x_offset, const double y_offset) { camera.process_mouse_scroll(static_cast<float>(y_offset)); }
 
-
 glm::vec3 GetCurrentModelZAxis(const glm::vec3 &rotation) {
   auto rot_matrix = glm::mat4(1.0f);
   rot_matrix = glm::rotate(rot_matrix, glm::radians(rotation.x), glm::vec3(1, 0, 0));
@@ -151,35 +154,47 @@ glm::vec3 GetCurrentModelZAxis(const glm::vec3 &rotation) {
 
 void UpdateModelTransform(std::unique_ptr<Model> &model, const glm::vec3 &pivot_pos, const glm::vec3 &dynamic_pos, GLFWwindow *window) {
   const glm::vec3 current_dir = GetCurrentModelZAxis(model->rotation);
+  // const glm::vec3 current_dir = model->rotation;
   const glm::vec3 target_dir = glm::normalize(pivot_pos - dynamic_pos);
 
   // Calculates the quaternion of rotation between two directions
+  const float dir_threshold = 0.001f;// Small threshold angle in radians
   const float dot_product = glm::dot(current_dir, target_dir);
   float angle = acos(glm::clamp(dot_product, -1.0f, 1.0f));
 
-  if (dot_product < -0.9999f) {
-    // Almost in the opposite direction
-    angle = glm::pi<float>();// 180°
+  // if (dot_product < -0.9999f) {
+  //   // Almost in the opposite direction
+  //   angle = glm::pi<float>();// 180°
+  // }
+  if (abs(angle) < dir_threshold) { angle = 0.0f; }
+  if (angle > 0.0f) {
+    glm::vec3 rotation_axis = glm::cross(current_dir, target_dir);
+
+    if (glm::length(rotation_axis) < 0.001f) {
+      // If the current direction and the target direction are almost parallel
+      rotation_axis = glm::vec3(0.0f, 0.0f, 1.0f);// can choose any axis perpendicular to these directions
+    } else { rotation_axis = glm::normalize(rotation_axis); }
+
+    const glm::quat rotation_quat = glm::angleAxis(angle, glm::normalize(rotation_axis));
+    const auto current_quat = glm::quat(glm::radians(model->rotation));
+    const glm::quat new_quat = rotation_quat * current_quat;
+
+    // Build a quaternion rotation
+    model->rotation = glm::degrees(glm::eulerAngles(new_quat));
   }
-
-  glm::vec3 rotation_axis = glm::cross(current_dir, target_dir);
-
-  if (glm::length(rotation_axis) < 0.001f) {
-    // If the current direction and the target direction are almost parallel
-    rotation_axis = glm::vec3(0.0f, 0.0f, 1.0f);// can choose any axis perpendicular to these directions
-  } else { rotation_axis = glm::normalize(rotation_axis); }
-
-  const glm::quat rotation_quat = glm::angleAxis(angle, glm::normalize(rotation_axis));
-  const auto current_quat = glm::quat(glm::radians(model->rotation));
-  const glm::quat new_quat = rotation_quat * current_quat;
-
-  // Build a quaternion rotation
-  model->rotation = glm::degrees(glm::eulerAngles(new_quat));
-
   glm::vec3 position = model->GetPosition();
-
-  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) position += target_dir * 40.0f * delta_time;
-  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) position -= target_dir * 40.0f * delta_time;
+  if (model->GetName() == "rongeur") {
+    if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) position -= target_dir * 40.0f * delta_time;
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) position += target_dir * 40.0f * delta_time;
+  }
+  if (model->GetName() == "tube") {
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) position -= target_dir * 40.0f * delta_time;
+    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) position += target_dir * 40.0f * delta_time;
+  }
+  if (model->GetName() == "endoscope") {
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) position -= target_dir * 40.0f * delta_time;
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) position += target_dir * 40.0f * delta_time;
+  }
 
   glm::vec3 direction_to_pivot = pivot_pos - position;
   float distance_to_pivot = glm::length(direction_to_pivot);
@@ -196,6 +211,7 @@ void SwitchToEnglishInput() {
 #pragma endregion
 
 int main() {
+
 #pragma region Init GLFW
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -233,26 +249,28 @@ int main() {
 
 #pragma region Init models
   // load models
-  Model our_model("./resources/objects/backpack/backpack.obj");
-  Model bone("./resources/objects/backpack/test_bone_45.obj");
+  Model our_model("our_model", "./resources/objects/backpack/backpack.obj");
+  Model bone("bone", "./resources/objects/backpack/test_bone_45.obj");
 
-  tube = std::make_unique<Model>("./resources/objects/backpack/tubeC.obj");
-  endoscope = std::make_unique<Model>("./resources/objects/backpack/endoscope.obj");
-  upper = std::make_unique<Model>("./resources/objects/backpack/upper.obj");
-  lower = std::make_unique<Model>("./resources/objects/backpack/lower.obj");
+  tube = std::make_unique<Model>("tube", "./resources/objects/backpack/tubeC.obj");
+  endoscope = std::make_unique<Model>("endoscope", "./resources/objects/backpack/endoscope.obj");
+  upper = std::make_unique<Model>("rongeur", "./resources/objects/backpack/upper.obj");
+  lower = std::make_unique<Model>("rongeur", "./resources/objects/backpack/lower.obj");
 
-  axis = std::make_unique<Model>("./resources/objects/backpack/axis.obj");
-  x = std::make_unique<Model>("./resources/objects/backpack/x.obj");
-  y = std::make_unique<Model>("./resources/objects/backpack/y.obj");
-  z = std::make_unique<Model>("./resources/objects/backpack/z.obj");
-  pivot = std::make_unique<Model>("./resources/objects/backpack/axis.obj");
-  dynamic = std::make_unique<Model>("./resources/objects/backpack/axis.obj");
+  axis = std::make_unique<Model>("axis", "./resources/objects/backpack/axis.obj");
+  x = std::make_unique<Model>("x", "./resources/objects/backpack/x.obj");
+  y = std::make_unique<Model>("y", "./resources/objects/backpack/y.obj");
+  z = std::make_unique<Model>("z", "./resources/objects/backpack/z.obj");
+  pivot = std::make_unique<Model>("pivot", "./resources/objects/backpack/axis.obj");
+  dynamic = std::make_unique<Model>("dynamic", "./resources/objects/backpack/axis.obj");
 
   ////////////////////////////////////////////////////implement///////////////////////////////////////////////////////
 
   our_model.SetPosition(glm::vec3(1000, 1000, 1000));
   dynamic->SetPosition(dynamic_pos);
   pivot->SetPosition(pivot_pos);
+
+  bone.SetPosition(glm::vec3(0, 10, 0));
 
   upper->SetPosition(pivot_pos);
   lower->SetPosition(pivot_pos);
@@ -345,6 +363,7 @@ int main() {
 #pragma endregion
 
   while (!glfwWindowShouldClose(window)) {
+
 #pragma region Init
     SwitchToEnglishInput();
     const auto current_frame = static_cast<float>(glfwGetTime());
@@ -415,22 +434,22 @@ int main() {
     ImGui::Begin("Debug", &is_showImGui, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
     ///////////
 #pragma region camera
-    glm::vec3 camera_pos_value = camera.cam_position;
-    ImGui::Text("camera_pos  ");
-    ImGui::SameLine();
-    ImGui::DragFloat3("##camera_pos", &camera_pos_value.x, 0.1f, 0.0f, 0.0f, "%.2f");
-
-    float camera_yaw_value = camera.cam_yaw;
-    ImGui::Text("camera_yaw  ");
-    ImGui::SameLine();
-    ImGui::DragFloat("##camera_pos", &camera_yaw_value, 0.1f, 0.0f, 0.0f, "%.2f");
-
-    float camera_pitch_value = camera.cam_pitch;
-    ImGui::Text("camera_pitch");
-    ImGui::SameLine();
-    ImGui::DragFloat("##camera_pitch", &camera_pitch_value, 0.1f, 0.0f, 0.0f, "%.2f");
-
-    ImGui::Separator();
+    // glm::vec3 camera_pos_value = camera.cam_position;
+    // ImGui::Text("camera_pos  ");
+    // ImGui::SameLine();
+    // ImGui::DragFloat3("##camera_pos", &camera_pos_value.x, 0.1f, 0.0f, 0.0f, "%.2f");
+    //
+    // float camera_yaw_value = camera.cam_yaw;
+    // ImGui::Text("camera_yaw  ");
+    // ImGui::SameLine();
+    // ImGui::DragFloat("##camera_pos", &camera_yaw_value, 0.1f, 0.0f, 0.0f, "%.2f");
+    //
+    // float camera_pitch_value = camera.cam_pitch;
+    // ImGui::Text("camera_pitch");
+    // ImGui::SameLine();
+    // ImGui::DragFloat("##camera_pitch", &camera_pitch_value, 0.1f, 0.0f, 0.0f, "%.2f");
+    //
+    // ImGui::Separator();
 #pragma endregion
 
 #pragma region dynamic_pos
@@ -441,44 +460,65 @@ int main() {
     ImGui::Separator();
 #pragma endregion
 
-#pragma region tube
-    glm::vec3 tube_value = tube->GetPosition();
-    ImGui::Text("tube_pos    ");
-    ImGui::SameLine();
-    if (ImGui::DragFloat3("##tube_pos", &tube_value.x, 0.1f, 0.0f, 0.0f, "%.2f")) { tube->SetPosition(tube_value); }
+#pragma region current_dir
 
-    glm::vec3 tube_rot = tube->GetRotation();
-    ImGui::Text("tube_rot    ");
+    ImGui::Text("current_dir ");
     ImGui::SameLine();
-    if (ImGui::DragFloat3("##tube_rot", &tube_rot.x, 0.1f, 0.0f, 0.0f, "%.2f")) { tube->SetRotation(tube_rot); }
-
+    glm::vec3 current_dir = GetCurrentModelZAxis(endoscope->rotation);
+    ImGui::DragFloat3("##current_dir", &current_dir.x, 0.01f, 0.0f, 0.0f, "%.2f");
     ImGui::Separator();
+
+#pragma endregion
+
+#pragma region current_dir
+
+    ImGui::Text("self_dir   ");
+    ImGui::SameLine();
+    glm::vec3 self_dir = GetCurrentModelZAxis(endoscope->rotation);
+    ImGui::DragFloat3("##self_dir", &self_dir.x, 0.01f, 0.0f, 0.0f, "%.2f");
+    ImGui::Separator();
+
+#pragma endregion
+
+#pragma region tube
+    // glm::vec3 tube_value = tube->GetPosition();
+    // ImGui::Text("tube_pos    ");
+    // ImGui::SameLine();
+    // if (ImGui::DragFloat3("##tube_pos", &tube_value.x, 0.1f, 0.0f, 0.0f, "%.2f")) { tube->SetPosition(tube_value); }
+    //
+    // glm::vec3 tube_rot = tube->GetRotation();
+    // ImGui::Text("tube_rot    ");
+    // ImGui::SameLine();
+    // if (ImGui::DragFloat3("##tube_rot", &tube_rot.x, 0.1f, 0.0f, 0.0f, "%.2f")) { tube->SetRotation(tube_rot); }
+    //
+    // ImGui::Separator();
 #pragma endregion
 
 #pragma region rongeur
-    ImGui::Text("Rongeur");
-    glm::vec3 upper_pos = upper->GetPosition();
-    ImGui::Text("upper_pos   ");
-    ImGui::SameLine();
-    if (ImGui::DragFloat3("##upper_pos", &upper_pos.x, 0.1f, 0.0f, 0.0f, "%.2f")) { upper->SetPosition(upper_pos); }
-
-    glm::vec3 upper_rot = tube->GetRotation();
-    ImGui::Text("upper_rot   ");
-    ImGui::SameLine();
-    if (ImGui::DragFloat3("##upper_rot", &upper_rot.x, 0.1f, 0.0f, 0.0f, "%.2f")) { upper->SetRotation(upper_rot); }
-
-    ImGui::Separator();
+    // ImGui::Text("Rongeur");
+    // glm::vec3 upper_pos = upper->GetPosition();
+    // ImGui::Text("upper_pos   ");
+    // ImGui::SameLine();
+    // if (ImGui::DragFloat3("##upper_pos", &upper_pos.x, 0.1f, 0.0f, 0.0f, "%.2f")) { upper->SetPosition(upper_pos); }
+    //
+    // glm::vec3 upper_rot = tube->GetRotation();
+    // ImGui::Text("upper_rot   ");
+    // ImGui::SameLine();
+    // if (ImGui::DragFloat3("##upper_rot", &upper_rot.x, 0.1f, 0.0f, 0.0f, "%.2f")) { upper->SetRotation(upper_rot); }
+    //
+    // ImGui::Separator();
 
 #pragma endregion
 
 #pragma region endoscope
+    ImGui::Separator();
     ImGui::Text("Endoscope   ");
-    glm::vec3 endoscope_pos = upper->GetPosition();
+    glm::vec3 endoscope_pos = endoscope->GetPosition();
     ImGui::Text("endoscopepos");
     ImGui::SameLine();
     if (ImGui::DragFloat3("##endoscope_pos", &endoscope_pos.x, 0.1f, 0.0f, 0.0f, "%.2f")) { endoscope->SetPosition(endoscope_pos); }
 
-    glm::vec3 endoscope_rot = tube->GetRotation();
+    glm::vec3 endoscope_rot = endoscope->GetRotation();
     ImGui::Text("endoscoperot");
     ImGui::SameLine();
     if (ImGui::DragFloat3("##endoscope_rot", &endoscope_rot.x, 0.1f, 0.0f, 0.0f, "%.2f")) { endoscope->SetRotation(endoscope_rot); }
@@ -500,27 +540,27 @@ int main() {
 #pragma endregion
 
 #pragma region mutable_ set_
-    fusion_data.mutable_endoscope_pos()->set_x(-endoscope->GetWorldPosition().x);
-    fusion_data.mutable_endoscope_pos()->set_y(endoscope->GetWorldPosition().y);
-    fusion_data.mutable_endoscope_pos()->set_z(endoscope->GetWorldPosition().z);
+    fusion_data.mutable_endoscope_pos()->set_x(-endoscope->GetPosition().x);
+    fusion_data.mutable_endoscope_pos()->set_y(endoscope->GetPosition().y);
+    fusion_data.mutable_endoscope_pos()->set_z(endoscope->GetPosition().z);
 
-    fusion_data.mutable_endoscope_euler()->set_x(-endoscope->GetWorldRotation().x);
-    fusion_data.mutable_endoscope_euler()->set_y(endoscope->GetWorldRotation().y);
-    fusion_data.mutable_endoscope_euler()->set_z(0);//-endoscope->GetRotation().z
+    fusion_data.mutable_endoscope_euler()->set_x(endoscope->GetRotation().x);
+    fusion_data.mutable_endoscope_euler()->set_y(endoscope->GetRotation().y);
+    fusion_data.mutable_endoscope_euler()->set_z(endoscope->GetRotation().z);
 
     fusion_data.mutable_tube_pos()->set_x(-tube->GetPosition().x);
     fusion_data.mutable_tube_pos()->set_y(tube->GetPosition().y);
     fusion_data.mutable_tube_pos()->set_z(tube->GetPosition().z);
 
     fusion_data.mutable_tube_euler()->set_x(tube->GetRotation().x);
-    fusion_data.mutable_tube_euler()->set_y(-tube->GetRotation().y);
-    fusion_data.mutable_tube_euler()->set_z(0);
+    fusion_data.mutable_tube_euler()->set_y(tube->GetRotation().y);
+    fusion_data.mutable_tube_euler()->set_z(tube->GetRotation().z);
 
     fusion_data.mutable_offset()->set_endoscope_offset(-1);
     fusion_data.mutable_offset()->set_tube_offset(-3);
     fusion_data.mutable_offset()->set_instrument_switch(60);
     // fusion_data.mutable_offset()->set_animation_value(dis_0_1(gen));
-    fusion_data.mutable_offset()->set_animation_value(0);
+    fusion_data.mutable_offset()->set_animation_value(ani_value);
     fusion_data.mutable_offset()->set_pivot_offset(2);
 
     fusion_data.mutable_rot_coord()->set_x(0);
@@ -557,9 +597,9 @@ int main() {
     fusion_data.mutable_rongeur_pos()->set_y(upper->GetPosition().y);
     fusion_data.mutable_rongeur_pos()->set_z(upper->GetPosition().z);
 
-    fusion_data.mutable_rongeur_rot()->set_x(-upper->GetRotation().y);
+    fusion_data.mutable_rongeur_rot()->set_x(upper->GetRotation().y);
     fusion_data.mutable_rongeur_rot()->set_y(upper->GetRotation().x);
-    fusion_data.mutable_rongeur_rot()->set_z(0);
+    fusion_data.mutable_rongeur_rot()->set_z(upper->GetRotation().z);
 #pragma endregion
 
 #pragma region eCAL pub send
@@ -586,6 +626,7 @@ int main() {
     glfwSwapBuffers(window);
     glfwPollEvents();
 #pragma endregion
+
   }
 
 #pragma region Finalize
