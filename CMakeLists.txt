@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.26)
 project(
         SpineSimServer
         LANGUAGES CXX C
@@ -39,5 +39,5 @@ target_link_libraries(SpineSimServer
 target_include_directories(SpineSimServer PRIVATE include)
 target_include_directories(SpineSimServer PRIVATE protobuf)
 target_include_directories(SpineSimServer PRIVATE include/ImGui)
-target_precompile_headers(SpineSimServer PUBLIC ./include/PCH.h)
+#target_precompile_headers(SpineSimServer PUBLIC ./include/PCH.h)
 
