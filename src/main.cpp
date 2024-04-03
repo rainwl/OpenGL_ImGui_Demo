@@ -106,8 +106,20 @@ void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) dynamic_pos.z -= 0.5f;
 #pragma endregion
 
-  if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) ani_value = 0.05f;
-  if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) ani_value = 0.9f;
+  if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) ani_value = 0.05f;
+  if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) ani_value = 0.9f;
+
+  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) tube->rotation.z += 1.0f;
+  if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) tube->rotation.z -= 1.0f;
+
+  if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
+    upper->rotation.z += 1.0f;
+    lower->rotation.z += 1.0f;
+  }
+  if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+    upper->rotation.z -= 1.0f;
+    lower->rotation.z -= 1.0f;
+  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -249,24 +261,33 @@ int main() {
 
 #pragma region Init models
   // load models
-  Model our_model("our_model", "./resources/objects/backpack/backpack.obj");
-  Model bone("bone", "./resources/objects/backpack/test_bone_45.obj");
+  Model bone("bone", "./resources/test_bone_45.obj");
 
-  tube = std::make_unique<Model>("tube", "./resources/objects/backpack/tubeC.obj");
-  endoscope = std::make_unique<Model>("endoscope", "./resources/objects/backpack/endoscope.obj");
-  upper = std::make_unique<Model>("rongeur", "./resources/objects/backpack/upper.obj");
-  lower = std::make_unique<Model>("rongeur", "./resources/objects/backpack/lower.obj");
+  tube = std::make_unique<Model>("tube", "./resources/tubeC.obj");
+  endoscope = std::make_unique<Model>("endoscope", "./resources/endoscope.obj");
+  upper = std::make_unique<Model>("rongeur", "./resources/upper.obj");
+  lower = std::make_unique<Model>("rongeur", "./resources/lower.obj");
 
-  axis = std::make_unique<Model>("axis", "./resources/objects/backpack/axis.obj");
-  x = std::make_unique<Model>("x", "./resources/objects/backpack/x.obj");
-  y = std::make_unique<Model>("y", "./resources/objects/backpack/y.obj");
-  z = std::make_unique<Model>("z", "./resources/objects/backpack/z.obj");
-  pivot = std::make_unique<Model>("pivot", "./resources/objects/backpack/axis.obj");
-  dynamic = std::make_unique<Model>("dynamic", "./resources/objects/backpack/axis.obj");
+  axis = std::make_unique<Model>("axis", "./resources/axis.obj");
+  x = std::make_unique<Model>("x", "./resources/x.obj");
+  y = std::make_unique<Model>("y", "./resources/y.obj");
+  z = std::make_unique<Model>("z", "./resources/z.obj");
+  pivot = std::make_unique<Model>("pivot", "./resources/axis.obj");
+  dynamic = std::make_unique<Model>("dynamic", "./resources/axis.obj");
 
   ////////////////////////////////////////////////////implement///////////////////////////////////////////////////////
 
-  our_model.SetPosition(glm::vec3(1000, 1000, 1000));
+  axis->SetScale(10.0f);
+  x->SetPosition(glm::vec3(100.0f, 0, 0));
+  y->SetPosition(glm::vec3(0, 100.0f, 0));
+  z->SetPosition(glm::vec3(0, 0, 100.0f));
+  x->SetScale(10.0f);
+  x->SetRotation(glm::vec3(0, -90, 0));
+  y->SetScale(10.0f);
+  y->SetRotation(glm::vec3(0, -90, 0));
+  z->SetScale(10.0f);
+  z->SetRotation(glm::vec3(0, -90, 0));
+
   dynamic->SetPosition(dynamic_pos);
   pivot->SetPosition(pivot_pos);
 
@@ -371,7 +392,8 @@ int main() {
     last_frame = current_frame;
     process_input(window);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0.7137f, 0.7333f, 0.7686f, 1.0f);// rgb(182, 187, 196)
+    // glClearColor(0.7137f, 0.7333f, 0.7686f, 1.0f);// rgb(182, 187, 196)
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);// rgb(182, 187, 196)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glfwGetWindowSize(window, &window_rt_w, &window_rt_h);
 #pragma endregion
@@ -399,7 +421,7 @@ int main() {
 #pragma region Model
 
     /////////////////////////////////////////////////////////////////////
-    our_model.Draw(shader);
+    // our_model.Draw(shader);
     axis->Draw(shader);
     x->Draw(shader);
     y->Draw(shader);

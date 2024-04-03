@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "ImGui/imgui.h"
+#include "imgui.h"
 
 #include <iostream>
 #include <string>
